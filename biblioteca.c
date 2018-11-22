@@ -25,6 +25,7 @@ void interfaceUsuario() {
 		printf("\nD-Finalizar\n");
 		scanf("%c", &menu);
 		fflush(stdin);
+		menu = toupper(menu);
 		switch (menu) {
 		case 'A':
 			lista = cadastroPessoa(&lista);
@@ -37,6 +38,11 @@ void interfaceUsuario() {
 			fflush(stdin);
 			switch (submenu) {
 			case 1:
+				puts("Digite o codigo do cliente: \n");
+				int codigo = 0;
+				scanf("%d", &codigo);
+				(lista) = procurarPessoaPorCodigo(lista, codigo);
+				ExcluirPessoa(&lista);
 				break;
 			case 2:
 				break;
@@ -54,7 +60,11 @@ void interfaceUsuario() {
 			fflush(stdin);
 			switch (submenu) {
 			case 1:
+				//if(lista != NULL){
 				imprimirTudo(lista);
+			//	}else{
+			//		puts("Vazio porra");
+			//	}
 				break;
 			case 2:
 				puts("Digite o codigo do cliente: \n");
@@ -66,7 +76,7 @@ void interfaceUsuario() {
 			case 3:
 				break;
 			default:
-				puts("digite somete uma das opcoes");
+				puts("digite somente uma das opcoes");
 				break;
 			}
 			break;
@@ -163,7 +173,7 @@ void cadastroCarro(EstruturaPessoa **lista) {
 	} else {
 		novo->anterior = (*lista)->dadosDosCarros;
 		int tmp = (*lista)->dadosDosCarros->codigo;
-		novo->codigo = tmp++;
+		novo->codigo = ++tmp;
 		(*lista)->dadosDosCarros = novo;
 	}
 
@@ -196,6 +206,7 @@ EstruturaPessoa* cadastroPessoa(EstruturaPessoa** lista) {
 		printf("\nP- Parcial");
 		printf("\nM- Mensal\n");
 		scanf("%c", &novo->contrato);
+		novo->contrato = toupper(novo->contrato);
 		if (novo->contrato != 'D' && novo->contrato != 'P'
 				&& novo->contrato != 'M') {
 			printf("\nTipo de contrato invalido\n");
@@ -220,25 +231,34 @@ EstruturaPessoa* cadastroPessoa(EstruturaPessoa** lista) {
 	if ((*lista) == NULL) {
 		(lista) = &novo;
 		(*lista)->proximo = NULL;
+		(*lista)->anterior = NULL;
+
 	} else {
+
 		novo->anterior = (*lista);
 		novo->proximo = NULL;
 
 		(*lista)->proximo = novo;
+		(*lista) = (*lista)->proximo;
 	}
 
 	puts("Cliente Cadastrado com Sucesso!");
 	return *lista;
 }
 void ExcluirPessoa(EstruturaPessoa** pessoa) {
-	(*pessoa)->anterior->proximo = (*pessoa)->proximo; // indica que o proximo do item excluido sera
-													   //o proximo do item anterior a ele, tomando seu lugar
-
-	(*pessoa)->proximo			//indica que o item anterior ao excluido sera
-	->anterior = (*pessoa)->anterior; // o anterior ao proximo item dele, tomando seu lugar
-
+	if ((*pessoa)->anterior != NULL) {
+		(*pessoa)->anterior->proximo = (*pessoa)->proximo; // indica que o proximo do item excluido sera
+	}
+	//o proximo do item anterior a ele, tomando seu lugar
+	if ((*pessoa)->anterior != NULL) {
+		(*pessoa)->proximo		//indica que o item anterior ao excluido sera
+		->anterior = (*pessoa)->anterior; // o anterior ao proximo item dele, tomando seu lugar
+	}
 	//ficando sem referencia, o item nao pode ser mais encontrado na lista
-	(*pessoa) = (*pessoa)->proximo; //passamos para o proximo da lista, e perdemos a referencia ao item excluido.
+	if ((*pessoa)->anterior != NULL) {
+		(*pessoa) = (*pessoa)->anterior;
+	} else
+		(*pessoa) = NULL;
 }
 void imprimeCarro(EstruturaCarro* carro) {
 	if (carro != NULL) {
@@ -251,6 +271,7 @@ void imprimeCarro(EstruturaCarro* carro) {
 	}
 }
 void imprimirTudo(EstruturaPessoa* lista) {
+
 	if (lista != NULL) {
 
 		printf("\n\nNOME: %s\n", lista->nome);
@@ -262,10 +283,15 @@ void imprimirTudo(EstruturaPessoa* lista) {
 		printf("\n---------------");
 		printf("\n----CARROS-----\n");
 		imprimeCarro(tmp);
+		free(tmp);
 		printf("----------------------\n");
 		printf("----FIM DOS CARROS----\n");
-		imprimirTudo(lista->proximo);
-
+		if (lista->anterior != NULL) {
+			imprimirTudo(lista->anterior);
+		}
+	} else {
+		puts("Lista vazia !");
+		return;
 	}
 }
 
@@ -279,35 +305,35 @@ EstruturaPessoa* procurarPessoaPorCodigo(EstruturaPessoa* lista, int codigo) {
 		puts("\nData Nascimento: ");
 		puts(lista->dataNasc);
 		return lista;
-	} else{
-		return procurarPessoaPorCodigo(lista->proximo, codigo);
+	} else {
+		return procurarPessoaPorCodigo(lista->anterior, codigo);
 	}
 
 }
 int consistePlaca(char placa[]) {
 	int i = 0;
 	for (i = 0; i < 3; i++) {
-		if (!VerificaSeEhLetra(placa[i])) {
+		if (!isalpha(placa[i])) {
 			return 1;
 		}
 	}
 	for (i = 3; i < 7; i++) {
-		if (!VerificaSeEhNumero(placa[i])) {
+		if (!isdigit(placa[i])) {
 			return 1;
 		}
 	}
 	return 0;
 }
-int VerificaSeEhNumero(char c) {
-	if ((c <= 57 && c >= 48)) {
-		return 1;
-	} else
-		return 0;
-}
-
-int VerificaSeEhLetra(char c) {
-	if ((c <= 90 && c >= 65) || (c >= 97 && c <= 122)) {
-		return 1;
-	} else
-		return 0;
-}
+//int VerificaSeEhNumero(char c) {
+//	if ((c <= 57 && c >= 48)) {
+//		return 1;
+//	} else
+//		return 0;
+//}
+//
+//int VerificaSeEhLetra(char c) {
+//	if ((c <= 90 && c >= 65) || (c >= 97 && c <= 122)) {
+//		return 1;
+//	} else
+//		return 0;
+//}
